@@ -1,11 +1,11 @@
-import {Injectable, StreamableFile} from "@nestjs/common";
+import { Injectable, StreamableFile } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { File } from "../models/file.model";
 import { FsService } from "../fs/fs.service";
 import { FileDto } from "../dtos/file.dto";
 import { GetFilesDto } from "../dtos/get-files.dto";
-import {DeleteFileDto} from "../dtos/delete-file.dto";
-import {createReadStream, readFileSync} from "fs";
+import { DeleteFileDto } from "../dtos/delete-file.dto";
+import { createReadStream, readFileSync } from "fs";
 
 @Injectable()
 export class FilesService {
@@ -13,7 +13,7 @@ export class FilesService {
     @InjectModel(File)
     private filesRepository: typeof File,
     private fsService: FsService
-  ) {}
+  ) { }
 
   async createDir(dto: FileDto) {
     const parentFile = await this.filesRepository.findOne({
@@ -43,7 +43,7 @@ export class FilesService {
     let parentFile = null
 
     if (dto.parentId) {
-      parentFile = await this.filesRepository.findOne({where: {id: dto.parentId}})
+      parentFile = await this.filesRepository.findOne({ where: { id: dto.parentId } })
     }
 
     if (parentFile) {
@@ -73,29 +73,29 @@ export class FilesService {
   }
 
   async getFiles(dto: GetFilesDto) {
-    const {userId, parentId} = dto
-    return  await this.filesRepository.findAll({where: {userId, parentId}})
+    const { userId, parentId } = dto
+    return await this.filesRepository.findAll({ where: { userId, parentId } })
   }
 
   async deleteFile(dto: DeleteFileDto) {
-    const file = await this.filesRepository.findOne({where: {id: dto.fileId}})
+    const file = await this.filesRepository.findOne({ where: { id: dto.fileId } })
     if (file.type === "dir") {
       await this.fsService.deleteDir(file.path, file.userId)
       if (file.children.length > 0) {
-        const files = await this.filesRepository.findAll({where: {parentId: file.id}})
+        const files = await this.filesRepository.findAll({ where: { parentId: file.id } })
         for (const oneFile of files) {
-          await this.filesRepository.destroy({where: {id: oneFile.id}})
+          await this.filesRepository.destroy({ where: { id: oneFile.id } })
         }
       }
     } else {
-      await this.fsService.deleteFile(file.path, file.userId, file.type)
+      await this.fsService.deleteFile(file.path, file.userId, file.type);
     }
-    await this.filesRepository.destroy({where: {id: dto.fileId}})
+    await this.filesRepository.destroy({ where: { id: dto.fileId } });
     return file
   }
 
   async downloadFile(fileId: number) {
-    const file = await this.filesRepository.findOne({where: {id: fileId}})
+    const file = await this.filesRepository.findOne({ where: { id: fileId } })
     const filePath = `${process.env.FILES_STORAGE_PATH}\\${file.userId}\\${file.name}.${file.type}`
     return createReadStream(filePath)
   }

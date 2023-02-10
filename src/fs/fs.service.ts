@@ -1,7 +1,9 @@
-import {HttpException, HttpStatus, Injectable, StreamableFile} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, StreamableFile } from '@nestjs/common';
 import * as fs from 'fs';
-import {FileDto} from "../dtos/file.dto";
-import {readFileSync} from "fs";
+import { FileDto } from "../dtos/file.dto";
+import { readFileSync } from "fs";
+import * as archiver from "archiver"
+import { join } from 'path';
 
 @Injectable()
 export class FsService {
@@ -56,7 +58,7 @@ export class FsService {
     const filePath = `${process.env.FILES_STORAGE_PATH}\\${userId}\\${path}`
     try {
       if (fs.existsSync(filePath)) {
-        fs.rmdirSync(filePath, {recursive: true})
+        fs.rmdirSync(filePath, { recursive: true })
       } else {
         throw new HttpException('Folder does not exist', HttpStatus.BAD_REQUEST)
       }
@@ -70,4 +72,6 @@ export class FsService {
     const file = readFileSync(filePath)
     return file
   }
+
+
 }
